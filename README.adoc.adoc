@@ -1,0 +1,108 @@
+= Object Calisthenics
+
+:icons: font
+:icon-set: fa
+:source-highlighter: rouge
+:experimental:
+
+== Regel 1: Nur eine Einrückungstiefe in jeder Methode
+
+Verboten sind geschachtelte Schleifen oder Bedingungen. Erlaubt ist neben der Einrückung des Methodenkörpers nur eine weitere Ebene, wie in folgendem Beispiel:
+
+[source, java]
+----
+public void foo() {
+  methodCall(2);
+  for (int i = 0; i < 10; i++) {
+    methodCall(i);
+  }
+}
+----
+
+Der Sinn der Regel ist es, die Komplexität der einzelnen Methoden klein zu halten.
+
+== Regel 2: Keine Verwendung von `else` und `switch case`
+
+Anstelle von `else` bzw. `switch` können Sie Polymorphismus einsetzen um Verhalten auszudifferenzieren. Sie dürfen "early return" verwenden, da der Programmfluss durch das return nicht kompliziert wird.
+
+[source, java]
+----
+public Something doStuff() {
+  if (someCondition) {
+    // ...
+    return new Something();
+  }
+  return new SomethingElse();
+}
+----
+
+Verboten wäre aber ein zweites if Statement mit der negierten Bedingung, hier könnte man wieder einen beliebig komplexen Programmfluss erzeugen.
+
+[source, java]
+----
+public void doStuff() {
+  if (someCondition) {
+    // ... do some stuff
+  }
+  if (!someCondition) { //  das ist ein else
+    // .... do something else
+  }
+}
+----
+
+== Regel 3: Alle Primitives/Strings wrappen
+
+Objekte sollen eine Bedeutung haben und nicht nur einfache Datenstrukturen sein. Zum Einen bekommen wir so eine Stelle, an der sich Verhalten ausdrücken lässt, zum Anderen können wir die spezifische Typen genauer ausdrücken, welche Operationen auf einem Wert ausgeführt werden können. Gewrappt werden alle primitiven Datentypen (`int`, `long`, `boolean`, etc.), alle korrespondierenden Objekt-Datentypen (`Integer`, `Long`, `Boolean`, etc.) und `String`, `StringBuilder`, `StringBuffer`, etc.
+
+Die Wrapper-Regel bezieht sich auf Methoden und Klassen, die Sie schreiben, nicht auf bestehende Methoden von existierenden Java Klassen. Sie dürften also die `println` Methode einer Instanz der Klasse `PrintStream` aufrufen und dabei einen ungewrappten String übergeben.
+
+Die Regel betrifft sowohl Parameter als auch die Rückgabe aller Methoden, die von einer anderen Klasse sichtbar sein könnten, also auf alle Methoden, die nicht `private` sind.
+
+Die Wrapperklassen dürfen einen String/Primitive im Konstruktor übergeben bekommen und müssen fachlich spezifisch sein, d.h. einen speziellen Zweck haben und nicht einen primitiven Typen oder String allgemein wrappen.
+
+Die Verwendung einer Collection oder eines Optionals, um einen primitiven Datenwert zu verpacken, würden wir als vorsätzliches Umgehen der Regel interpretieren.
+
+
+== Regel 4: Collections sind First Class
+
+Wenn Sie in einer Klasse ein Attribut haben, dass eine Kollektion von Dingen ist (Listen, Maps, Sets, Arrays, ...), darf es in der Klasse keine weiteren Attribute geben.
+
+
+== Regel 5: Höchstens ein Punkt pro Zeile
+
+Bei dieser Regel geht es um die Einhaltung von Demeters Gesetz. Eine Methode `foo` in der Klasse `Bar` darf nur andere Methoden in `Bar` aufrufen und Methoden von Objekten, die
+
+* Attribute von `Bar` sind
+* `foo` als Parameter übergeben bekommt
+* Innerhalb von `foo` erzeugt werden
+
+Die Ein-Punkt-pro-Zeile-Regel bezieht sich auf das Gesetz von Demeter, nicht auf Namen (zum Beispiel Packagenamen) oder Ketten von Transformationen in Streams. Aber ein Aufruf von `System.out.println(...)` in einer Methode `foo` wäre nicht gestattet, da dort die Methode `println` auf einem Objekt aufgerufen wird, das nicht einer der drei obigen Bedingungen entspricht.
+
+
+== Regel 6: Keine Abkürzungen
+
+Schreiben Sie Klassen-, Methoden- und Paketnamen aus. Diese Regel ist etwas ambivalent. Auf der einen Seite ist es sicherlich eine gute Idee klare Namen zu verwenden, auf der anderen Seite ist möglicherweise die Abkürzung so vertraut, dass es nicht intuitiv wäre einen ausgeschriebenen Namen zu verwenden (Beispiele: IBAN, PLZ, ...).
+
+== Regel 7: Kleine Klassen, kleine Pakete
+
+Klassen dürfen höchstens 50 Zeilen lang sein. Reine Kommentare werden nicht mitgezählt. Pakete dürfen nur 10 Klassen beinhalten.
+
+Sie dürfen Vererbung verwenden ohne, dass die Zeilen der Superklasse in die der Subklasse einbezogen werden, aber es muss sich um eine echte Abstraktions-/Vererbungsbeziehung handeln.
+
+Die Aufteilung der Klassen auf Pakete muss ebenfalls fachlich begründet und nicht willkürlich sein.
+
+
+== Regel 8: Keine Klasse hat mehr als zwei Instanzvariablen
+
+Auch diese Regel dient dem Ziel, kleine Klassen zu haben. Klassen dürfen also nur höchstens zwei Attribute haben. Beachten Sie auch Regel 4, die hier noch eine weitere Einschränkung macht. Die Verteilung von Attributen auf Klassen muss fachlich begründet sein. Wenn Sie Vererbung verwenden, denken Sie daran, dass Sie nach Regel 9 keine protected Attributes haben dürfen und Regel 3 auch für Methoden gilt, die `protected` sind.
+
+
+== Regel 9: Keine Getter, keine Setter, alle Attribute sind klassenprivat
+
+Getter und nicht-klassenprivate Attribute sind ein Einfalltor für Verletzungen des Gesetzes von Demeter, entsprechend sind sie in den Object Calisthenics verboten. Das Gleiche gilt für Setter, die ebenfalls das Geheimnisprinzip aushebeln. Verwenden Sie das "Tell, don't ask" Prinzip um Verletzungen gegen Regel 9 zu vermeiden.
+
+
+== Regel 10: Außer der main-Funktion ist nichts `static`
+
+In dem gesamten Programm darf das Keyword `static` nur ein einziges Mal vorkommen, und zwar bei der `main` Methode.
+Diese Regel existiert nicht im Originaldokument, vermutlich weil sie eigentlich eine Selbstverständlichkeit ist.

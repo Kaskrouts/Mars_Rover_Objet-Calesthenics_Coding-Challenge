@@ -1,0 +1,12 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+dependencies {
+  // Hier dürfen Sie nichts reinschreiben!
+}
+
+application {
+    mainClassName = 'Start.mainProgram'
+}
